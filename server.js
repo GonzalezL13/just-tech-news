@@ -15,7 +15,7 @@ app.use(routes);
 //we use the sequelize.sync() method to establish the connection to the database
 //"sync" part means that this is Sequelize taking the models and connecting them to associated database tables
 //If it doesn't find a table, it'll create it for you!
-//sequelize.sync({ force: true }) = DROP TABLE IF EXISTS
+//sequelize.sync({ force: true }) = DROP TABLE IF EXISTS *DO THIS WHEN UPDATING ROUTES()
 sequelize.sync({ force: false }).then(() => {
     app.listen(PORT, () => console.log('Now listening'));
 });
