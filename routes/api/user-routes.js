@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { User, Post, Vote } = require("../../models");
+const { User, Post, Vote, Comment } = require("../../models");
 
 //GET /api/users
 router.get("/", (req, res) => {
@@ -23,7 +23,7 @@ router.get("/:id", (req, res) => {
     //Equivilent to SELECT * FROM users WHERE id = 1
     //by using findOne() and where: id: req.params.id
     User.findOne({
-        attributes: { 
+        attributes: {
             exclude: ['password'],
         },
         where: {
@@ -35,12 +35,20 @@ router.get("/:id", (req, res) => {
                 attributes: ['id', 'title', 'post_url', 'created_at']
             },
             {
+                model: Comment,
+                attributes: ['id', 'comment_text', 'created_at'],
+                include: {
+                    model: Post,
+                    attributes: ['title']
+                }
+            },
+            {
                 model: Post,
                 attributes: ['title'],
                 through: Vote,
                 as: 'voted_posts'
             }
-        ] 
+        ]
     })
         .then(dbUserData => {
             //if nonexistent id then 404 status then return

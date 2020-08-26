@@ -1,22 +1,28 @@
 const router = require('express').Router();
 //this will form a JOIN with the foreign key user_id
-const { Post, User, Vote } = require('../../models');
+const { Post, User, Vote, Comment } = require('../../models');
 const sequelize = require('../../config/connection');
 
 // get all users
 router.get('/', (req, res) => {
-    console.log('======================');
     Post.findAll({
-        // Query configuration
+        order: [['created_at', 'DESC']],
         attributes: [
-            'id', 
-            'post_url', 
-            'title', 
+            'id',
+            'post_url',
+            'title',
             'created_at',
             [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
         ],
-        order: [['created_at', 'DESC']],
         include: [
+            {
+                model: Comment,
+                attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+                include: {
+                    model: User,
+                    attributes: ['username']
+                }
+            },
             {
                 model: User,
                 attributes: ['username']
@@ -28,7 +34,6 @@ router.get('/', (req, res) => {
             console.log(err);
             res.status(500).json(err);
         });
-
 });
 
 
@@ -39,9 +44,9 @@ router.get('/:id', (req, res) => {
             id: req.params.id
         },
         attributes: [
-            'id', 
-            'post_url', 
-            'title', 
+            'id',
+            'post_url',
+            'title',
             'created_at',
             [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
         ],
@@ -85,29 +90,29 @@ router.post('/', (req, res) => {
 
 router.put("/upvote", (req, res) => {
     // create the vote
-//------ALL THIS WENT TO POST.JS-------
-//    Vote.create({
-//        user_id: req.body.user_id,
-//        post_id: req.body.post_id
-//    }).then(() => {
-//        // then find the post we just voted on
-//        return Post.findOne({
-//            where: {
-//            id: req.body.post_id
-//            },
-//            attributes: [
-//                'id',
-//                'post_url',
-//                'title',
-//                'created_at',
-//                // use raw MySQL aggregate function query to get a count of how many votes the post has and return it under the name `vote_count`
-//                [
-//                    sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'),
-//                    'vote_count'
-//                ]
-//            ]
-//        })
-//----------------------------------
+    //------ALL THIS WENT TO POST.JS-------
+    //    Vote.create({
+    //        user_id: req.body.user_id,
+    //        post_id: req.body.post_id
+    //    }).then(() => {
+    //        // then find the post we just voted on
+    //        return Post.findOne({
+    //            where: {
+    //            id: req.body.post_id
+    //            },
+    //            attributes: [
+    //                'id',
+    //                'post_url',
+    //                'title',
+    //                'created_at',
+    //                // use raw MySQL aggregate function query to get a count of how many votes the post has and return it under the name `vote_count`
+    //                [
+    //                    sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'),
+    //                    'vote_count'
+    //                ]
+    //            ]
+    //        })
+    //----------------------------------
     //CUSTOM STATIC METHOS CREATED IN MODELS/POST.JS
     Post.upvote(req.body, { Vote })
         .then(dbPostData => res.json(dbPostData))
